@@ -1,0 +1,302 @@
+﻿@model Vievim.Areas.Inventory.Models.InventoryModel
+
+@{
+    ViewBag.Title = "Create";
+    var contact = ViewData["Contac"] as Vievim.Areas.Contact.Models.ContactsModel;
+}
+<table style="width:100%;font-family: sans-serif;font-size:smaller">
+    <thead>
+        <tr>
+            <td>creator:</td>
+            <td align="right">@WebSecurity.CurrentUserId</td>
+            <td align="right">@WebSecurity.CurrentUserName</td>
+        </tr>
+        <tr>
+            <td colspan="3" class="h4 turq pophead">my inventory create</td>
+        </tr>
+        <tr>
+            <td>owner:</td>
+            <td align="right">@ViewData["ContactsModelID"]</td>
+            <td align="right"style="text-transform:capitalize">@ViewData["ContactName"]</td>
+        </tr>
+    </thead>
+</table>
+<h1></h1>
+
+@using (Html.BeginForm("Create", "Inventory", FormMethod.Post, new { enctype = "multipart/form-data", @id = "createItem" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <a href="~/Areas/Inventory/Views/Inventory/Create.cshtml"></a>
+
+    <table class="table-popups">
+        <tbody>
+            <tr>
+                <td>
+                    date:
+                </td>
+                <td align="right">
+                    @DateTime.Now.AddHours(-5).ToString("MM/dd/yy")
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    item:
+                </td>
+                <td align="right">
+                    <input type="text" placeholder="name" name="Name" id="Name" class="form-control" data-validation="even_name" spellcheck="true" required>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <textarea class="form-control" style="height:auto;min-height:80px" rows="2" placeholder="description" id="Description" name="Description" spellcheck="true"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    category:
+                </td>
+                <td align="right">
+                    <select class="form-control" name="Category" id="Category" spellcheck="true" onchange="if(this.value == 123){$('#other').show();}else{$('#other').hide();}">
+                        <option class="placeHolder">Choose category</option>
+                        @{int j = 1;}
+                        @foreach (var item in ViewBag.ContactsCategoryID as IEnumerable<Vievim.Areas.Inventory.Models.InventoryFilter>)
+                        {
+
+                            if (item.categ != null)
+                            {
+                                if (j == 1)
+                                {
+                                    <option selected>@ViewBag.LatestCategory</option>
+                                    <option disabled>__________________</option>
+                                }
+                                else
+                                {
+                                    <option>@item.categ</option>
+                                }
+                                j++;
+                            }
+                        }
+                        <option value="123">new category. . .</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="right">
+                    <input type="text" style="display: none;" id="other" name="other" value="" class="form-control" spellcheck="true">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    vendor:
+                </td>
+                <td align="right">
+                    <select class="form-control" name="Supplier" id="Supplier" spellcheck="true" onchange="if(this.value == 123){$('#otherSupplier').show();}else{$('#otherSupplier').hide();}">
+                        <option class="placeHolder">choose a vendor</option>
+                        @{ int i = 1; }
+                        @foreach (var item in ViewBag.ContactsSupplierID as IEnumerable<Vievim.Areas.Inventory.Models.InventoryFilter>)
+                        {
+                            if (item.supplier != null)
+                            {
+                                if (i == 1)
+                                {
+                                    <option selected>@ViewBag.LatestSupplier</option>
+                                    <option disabled>__________________</option>
+                                }
+                                else
+                                {
+                                    <option>@item.supplier</option>
+                                }
+                                i++;
+                            }
+                        }
+                        <option value="123">new vendor. . .</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="right">
+                    <input type="text" style="display: none;" id="otherSupplier" name="otherSupplier" spellcheck="true" value="" class="form-control">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    file:
+                </td>
+                <td align="right">
+                    <input type="file" name="ProfilePicture" id="ProfilePicture" title="choose a file" onchange="pressed()" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    nfs:&nbsp;@Html.CheckBox("Sold", new { @style = "width:25px;" })
+                </td>
+                <td align="right">
+                    priority:
+                    <select class="form-control b7" data-val="true" data-val-number="The field priorityID must be a number." data-val-required="The priorityID field is required." title="choose level of importance" id="priorityID" name="priorityID" required="">
+                        <option value="1" style="background-color:#ec3e40; color:#fff">1 severe</option>
+                        <option value="2" style="background-color:#ff9b2b; color:#fff">2 high</option>
+                        <option value="3" style="background-color:#f5d800; color:#fff">3 elevated</option>
+                        <option value="4" style="background-color:#377fc7; color:#fff">4 guarded</option>
+                        <option selected="selected" value="5" style="background-color:#01a46d; color:#fff">5 low</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table-popups">
+        <tbody>
+            <tr>
+                <td>
+                    cost:&nbsp;<input type="text"style="text-align:right" placeholder="$ 0.00" name="Price" id="Price" onfocus="price_focus()" data-validation-allowing="float" class="form-control b7 currency" required data-validation="even_number" onchange="FloorPrice()" onkeyup="changeFloor()" @*value="0.00"*@>
+                    <span style="float:right">list:&nbsp;<input style="text-align:right" type="text" placeholder="$ 0.00" name="Floor" id="Floor" class="form-control b7" readonly /></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h1></h1>
+    <div class="floating-boxstatement">adding a new record of inventory for this contact</div>
+    <input type="hidden" name="ReqPage" id="ReqPage" value="@ViewData["ReqPage"]" />
+    <input type="hidden" value="@ViewData["ContactsModelID"]" name="ContactsModelID" id="ContactsModelID" />
+    <input type="hidden" name="mode" value="@ViewData["mode"]" />
+    <input type="hidden" name="savevalue" id="savevalue" value="" />
+    <h1></h1>
+    <button type="submit" class="btn35x100 fr" id="save" value="save" style="width:49%">save </button>
+    <button type="submit" id="savenew" value="save new" class="btn35x100" style="width:49%;float:left" return false;">save new</button>
+    <script>
+
+        $(document).submit(function () {
+            $("#Price").val($("#Price").val().toString().replace("$", '').replace(",", ''));
+        });
+        $.formUtils.addValidator({
+            name: 'even_number',
+            validatorFunction: function (value, $el, config, language, $form) {
+                return /^[-+]?\d{4}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{4}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{4}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{4}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{5}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{5}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{5}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{5}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{6}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{6}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{6}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{6}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{3}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{3}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{3}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{3}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}.\d{5}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{1}.\d{1}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{1}.\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{1}.\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{1}.\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{6}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{5}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{4}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{3}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{2}$/.test(value.replace(",", "")) ||
+                    /^[-+]?\d{1}$/.test(value.replace(",", ""));
+            },
+            errorMessage: 'please add format  x. x.x x.xx xx. xx.x xx.xx xxx. xxx.x xxx.xx xxxx. xxxx.x xxxx.xx xxxxx. xxxxx.x xxxxx.xx '
+            + '-x. -x.x -x.xx -xx. -xx.x -xx.xx -xxx. -xxx.x -xxx.xx -xxxx. -xxxx.x -xxxx.xx -xxxxx. -xxxxx.x -xxxxx.xx'
+            ,
+
+            errorMessageKey: 'badEvenNumber'
+        });
+        function getWordCount(wordString) {
+            var words = wordString.split(" ");
+            words = words.filter(function (words) {
+                return words.length > 0
+            }).length;
+            return words;
+        }
+        $.formUtils.addValidator({
+            name: 'even_name',
+            validatorFunction: function (value, $el, config, language, $form) {
+                var count = getWordCount(value);
+                if (count <= 3) {
+                    return true;
+                }
+            },
+            errorMessage: 'three word limit',
+            errorMessageKey: 'badEvenNumber'
+        });
+        $(document).ready(function () {
+
+            $.validate();
+        });
+    </script>
+    <script>
+        $("#savenew").live("click", function (e) {
+            $('#savevalue').val("SaveNew");
+        });
+
+        function SubmitForm() {
+
+            var name = $('#Name').val();
+            if (name == "" || name == null || name == undefined) {
+                event.preventDefault();
+                $("#dialog-alert").html("please enter name.");
+                $("#dialog-alert").dialog('open');
+
+            }
+            else {
+                $("#createItem").submit();
+            }
+
+        }
+    </script>
+    <script>
+
+        //function numberWithCommas(x) {
+        //    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        //}
+        function FloorPrice() {
+
+            var price = $('#Price').val();
+            if (!isNaN(price))
+                $('#Price').val(/*numberWithCommas*/(parseFloat(Math.round(price * 100) / 100).toFixed(2)));
+            var floorprice = (price * (1 + '@contact.Percent ' / 100));
+            $('#Floor').val(/*numberWithCommas*/(parseFloat(Math.round(floorprice * 100) / 100).toFixed(2)));
+            $('#Floor').show();
+        }
+
+        function changeFloor() {
+            var price = $('#Price').val();
+            var floorprice = (price * (1 + '@contact.Percent ' / 100));
+            $('#Floor').val(/*numberWithCommas*/(parseFloat(Math.round(floorprice * 100) / 100).toFixed(2)));
+            $('#Floor').show();
+        }
+
+        function price_focus() {
+            $('#Price').val("");
+        }
+       //
+        $("#priorityID").change(function () {
+            var a = ["#ec3e40", "#ff9b2b", "#f5d800", "#377fc7", "#01a46d"];
+            var end = parseInt(this.value);
+            $("#priorityID").css("background-color", a[end - 1]);
+        });
+        var a = ["#ec3e40", "#ff9b2b", "#f5d800", "#377fc7", "#01a46d"];
+        var end = parseInt($("#priorityID").val());
+        $("#priorityID").css("background-color", a[end - 1]);
+    </script>
+                            }
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+}
+<style>
+    table.table-popups tr td {
+        white-space: initial !important;
+    }
+</style>
